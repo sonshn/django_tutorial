@@ -11,6 +11,25 @@
 <h1>{{ post.title }}</h1>
 <h4>{{ post.created_at }}</h4>
 <p>{{ post.content }}</p>
+
+{% if post.file_upload %}
+    <a href="{{ post.file_upload.url }}" class = "btn btn-outline-dark" role="button" download>Download:
+        {% if post.get_file_ext == 'csv' %}
+            <i class="fas fa-file-csv"></i>
+        {% elif post.get_file_ext == 'xlsx' or post.get_file_ext == 'xls' %}
+            <i class="fas fa-file-excel"></i>
+        {% elif post.get_file_ext == 'docx' or post.get_file_ext == 'doc' %}
+            <i class="fas fa-file-word"></i>
+        {% elif post.get_file_ext == 'txt' or post.get_file_ext == 'TXT' %}
+            <i class="fas fa-file-txt"></i>
+        {% else %}
+            <i class="far fa-file"></i>
+        {% endif %}
+
+        {{ post.get_file_name }}
+    </a>
+{% endif %}
+
 <hr/>
 <h3>여기 댓글이 들어올 수 있겠죠?</h3>
 </body>
