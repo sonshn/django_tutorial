@@ -1,6 +1,32 @@
-from django.shortcuts import render
-from django.views.generic import ListView, DetailView
-from .models import Post, Category
+from django.shortcuts import render, redirect
+from django.views.generic import ListView, DetailView, CreateView, UpdateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from .models import Post, Category, Tag
+from django.core.exceptions import PermissionDenied
+
+class PostCreate(CreateView):
+    model = Post
+    fields = ['title', 'hook_text', 'content', 'head_image', 'file_upload', 'category']
+
+    def form_valid(self, form):
+        current_user = self.request.user
+        if current_user.is_authenticated:
+            form.instance.author = current_user
+            response = super(PostCreate, self).form_valid(form)
+        else:
+            return redirect('/blog/')
+
+class PostUpdate(LoginRequiredMixin, UpdateView):
+    model = Post
+    fields = ['title', 'hook_text', 'content', 'head_image', 'file_upload', 'category']
+
+    template_name = 'blog/post_update_form.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and request.user == self.get_object().author:
+            return super(PostUpdate, self).dispatch(request, *args, **kwargs)
+        else:
+            raise PermissionDenied
 
 class PostList(ListView):
     model = Post
@@ -39,26 +65,3 @@ def category_page(request, slug):
             'category': category,
         }
     )
-
-# Create your views here.
-# def index(request):
-#     posts = Post.objects.all().order_by('-pk')
-#
-#     return render(
-#         request,
-#         'blog/index.html',
-#         {
-#             'posts': posts,
-#         }
-#     )
-#
-# def single_post_page(request, pk):
-#     post = Post.objects.get(pk=pk)
-#
-#     return render(
-#         request,
-#         'blog/single_post_page.html',
-#         {
-#             'post': post,
-#         }
-#     )
